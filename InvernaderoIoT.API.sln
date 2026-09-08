@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.37530.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvernaderoIoT.API", "InvernaderoIoT.API\InvernaderoIoT.API.csproj", "{4896D5C7-40F6-4B59-824A-0E4F5650DE24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvernaderoIoT.Web", "InvernaderoIoT.Web\InvernaderoIoT.Web.csproj", "{502DD17B-674A-4162-A6F2-B690D309C2DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4896D5C7-40F6-4B59-824A-0E4F5650DE24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4896D5C7-40F6-4B59-824A-0E4F5650DE24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4896D5C7-40F6-4B59-824A-0E4F5650DE24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4896D5C7-40F6-4B59-824A-0E4F5650DE24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{502DD17B-674A-4162-A6F2-B690D309C2DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{502DD17B-674A-4162-A6F2-B690D309C2DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{502DD17B-674A-4162-A6F2-B690D309C2DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{502DD17B-674A-4162-A6F2-B690D309C2DE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {655B9CCA-4B1D-4AB0-A15A-ED7D45FD69C5}
+	EndGlobalSection
+EndGlobal
