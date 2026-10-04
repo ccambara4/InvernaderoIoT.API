@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System;
 
 namespace InvernaderoIoT.API
 {
@@ -21,12 +25,83 @@ namespace InvernaderoIoT.API
         {
             services.AddControllers();
 
+            var claveJWT = Encoding.UTF8.GetBytes(
+            Configuration["Jwt:Key"]
+                                 );
+
+            services.AddAuthentication(
+                JwtBearerDefaults.AuthenticationScheme
+            )
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters =
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+
+                        IssuerSigningKey =
+                            new SymmetricSecurityKey(claveJWT),
+
+                        ValidateIssuer = true,
+
+                        ValidIssuer =
+                            Configuration["Jwt:Issuer"],
+
+                        ValidateAudience = true,
+
+                        ValidAudience =
+                            Configuration["Jwt:Audience"],
+
+                        ValidateLifetime = true,
+
+                        ClockSkew = TimeSpan.Zero
+                    };
+            });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Dashboard",
+                    builder =>
+                    {
+                        builder
+                            .AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
+
             services.AddDbContext<InvernaderoDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("ConexionSQL")
                 ));
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Ingrese el token JWT. Ejemplo: Bearer {token}"
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+                 });
+            });
         }
 
         public void Configure(
@@ -53,6 +128,10 @@ namespace InvernaderoIoT.API
             // app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("Dashboard");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

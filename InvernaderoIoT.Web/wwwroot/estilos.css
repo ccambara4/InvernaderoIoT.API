@@ -1,2 +1,689 @@
-ï»¿body {
+/* =========================================================
+   CONFIGURACIÓN GENERAL
+========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #263238;
+}
+
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+.pantalla-login {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient( 135deg, #e8f5e9, #f4f6f8 );
+}
+
+
+.login-card {
+    width: 400px;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    text-align: center;
+}
+
+
+.login-logo {
+    font-size: 55px;
+    margin-bottom: 10px;
+}
+
+
+.login-card h1 {
+    font-size: 30px;
+    color: #263238;
+    margin-bottom: 8px;
+}
+
+
+.login-subtitulo {
+    color: #78909c;
+    margin-bottom: 30px;
+}
+
+
+.campo-login {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+
+    .campo-login label {
+        display: block;
+        margin-bottom: 7px;
+        font-weight: bold;
+        color: #455a64;
+    }
+
+
+    .campo-login input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cfd8dc;
+        border-radius: 7px;
+        font-size: 15px;
+        outline: none;
+    }
+
+
+        .campo-login input:focus {
+            border-color: #2e7d32;
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.12);
+        }
+
+
+.btn-login {
+    width: 100%;
+    border: none;
+    background: #2e7d32;
+    color: white;
+    padding: 13px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+
+    .btn-login:hover {
+        background: #1b5e20;
+    }
+
+
+    .btn-login:disabled {
+        background: #9e9e9e;
+        cursor: not-allowed;
+    }
+
+
+.mensaje-login {
+    margin-top: 15px;
+    min-height: 20px;
+    font-size: 14px;
+    color: #d32f2f;
+}
+
+
+
+/* =========================================================
+   ENCABEZADO
+========================================================= */
+
+.encabezado {
+    background: #263238;
+    color: white;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.encabezado-izquierda h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+
+.encabezado-izquierda p {
+    opacity: 0.7;
+}
+
+
+.encabezado-derecha {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+
+.usuario-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    font-size: 13px;
+}
+
+
+    .usuario-info span {
+        opacity: 0.7;
+    }
+
+
+    .usuario-info strong {
+        font-size: 14px;
+    }
+
+
+    .usuario-info small {
+        color: #a5d6a7;
+    }
+
+
+.estado {
+    background: #455a64;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+
+.btn-logout {
+    background: #c62828;
+    padding: 10px 15px;
+    border-radius: 7px;
+}
+
+
+    .btn-logout:hover {
+        background: #b71c1c;
+    }
+
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.contenedor {
+    padding: 30px 40px;
+    max-width: 1400px;
+    margin: auto;
+}
+
+
+.resumen {
+    margin-bottom: 30px;
+}
+
+
+.titulo-seccion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+
+    .titulo-seccion h2 {
+        margin-bottom: 5px;
+    }
+
+
+    .titulo-seccion p {
+        color: #78909c;
+    }
+
+
+.ultima-actualizacion {
+    color: #78909c;
+    font-size: 13px;
+}
+
+
+    .ultima-actualizacion strong {
+        color: #455a64;
+    }
+
+
+
+/* =========================================================
+   TARJETAS
+========================================================= */
+
+.tarjetas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+
+.tarjeta {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+
+.icono {
+    font-size: 40px;
+}
+
+
+.tarjeta h3 {
+    font-size: 14px;
+    color: #78909c;
+    margin-bottom: 8px;
+}
+
+
+.tarjeta p {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+
+
+/* =========================================================
+   PANELES
+========================================================= */
+
+.panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+
+.panel-header {
+    padding: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+
+    .panel-header h2 {
+        margin-bottom: 5px;
+    }
+
+
+    .panel-header p {
+        color: #78909c;
+    }
+
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+button {
+    border: none;
+    background: #37474f;
+    color: white;
+    padding: 11px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+
+    button:hover {
+        background: #263238;
+    }
+
+
+    button:disabled {
+        background: #b0bec5;
+        cursor: not-allowed;
+    }
+
+
+
+/* =========================================================
+   CONTROL DEL SISTEMA
+========================================================= */
+
+.modo-control {
+    margin: 0 25px 25px;
+    padding: 20px;
+    background: #f5f7f8;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+
+    .modo-control > div:first-child {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+
+#estadoModo {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+
+.botones-modo {
+    display: flex;
+    gap: 10px;
+}
+
+
+.btn-control {
+    min-width: 130px;
+}
+
+
+.controles-dispositivos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 0 25px 25px;
+}
+
+
+.dispositivo {
+    border: 1px solid #eceff1;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.dispositivo-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+
+.dispositivo-icono {
+    font-size: 35px;
+}
+
+
+.dispositivo h3 {
+    margin-bottom: 7px;
+}
+
+
+#estadoVentilador,
+#estadoBomba {
+    font-size: 14px;
+    color: #78909c;
+}
+
+
+.botones-dispositivo {
+    display: flex;
+    gap: 8px;
+}
+
+
+.btn-encender {
+    background: #2e7d32;
+}
+
+
+    .btn-encender:hover {
+        background: #1b5e20;
+    }
+
+
+.btn-apagar {
+    background: #c62828;
+}
+
+
+    .btn-apagar:hover {
+        background: #b71c1c;
+    }
+
+
+
+/* =========================================================
+   FILTROS
+========================================================= */
+
+.controles {
+    padding: 0 25px 25px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 15px;
+}
+
+
+.control {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+
+    .control label {
+        font-size: 13px;
+        font-weight: bold;
+        color: #546e7a;
+    }
+
+
+    .control input,
+    .control select {
+        padding: 10px;
+        border: 1px solid #cfd8dc;
+        border-radius: 6px;
+        font-size: 14px;
+        outline: none;
+    }
+
+
+        .control input:focus,
+        .control select:focus {
+            border-color: #607d8b;
+        }
+
+
+
+/* =========================================================
+   TABLA
+========================================================= */
+
+.tabla-contenedor {
+    overflow-x: auto;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+thead {
+    background: #eceff1;
+}
+
+
+th {
+    text-align: left;
+    padding: 15px;
+    font-size: 13px;
+    color: #455a64;
+}
+
+
+td {
+    padding: 14px 15px;
+    border-top: 1px solid #eeeeee;
+    font-size: 14px;
+}
+
+
+tbody tr:hover {
+    background: #f7f9fa;
+}
+
+
+
+/* =========================================================
+   PAGINACIÓN
+========================================================= */
+
+.tabla-footer {
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eeeeee;
+}
+
+
+#contadorRegistros {
+    color: #78909c;
+    font-size: 14px;
+}
+
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.btn-pagina {
+    padding: 8px 13px;
+}
+
+
+#paginaActual {
+    font-size: 14px;
+    color: #546e7a;
+}
+
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #90a4ae;
+    font-size: 13px;
+}
+
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+    .tarjetas {
+        grid-template-columns: 1fr;
+    }
+
+
+    .controles-dispositivos {
+        grid-template-columns: 1fr;
+    }
+
+
+    .controles {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 800px) {
+
+    .encabezado {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+
+    .encabezado-derecha {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+
+    .usuario-info {
+        text-align: left;
+    }
+
+
+    .contenedor {
+        padding: 20px;
+    }
+
+
+    .titulo-seccion {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+
+    .modo-control {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+
+    .dispositivo {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+
+    .botones-dispositivo {
+        width: 100%;
+    }
+
+
+        .botones-dispositivo button {
+            flex: 1;
+        }
+
+
+    .tabla-footer {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .login-card {
+        width: calc(100% - 30px);
+        padding: 30px 20px;
+    }
+
+
+    .encabezado-derecha {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

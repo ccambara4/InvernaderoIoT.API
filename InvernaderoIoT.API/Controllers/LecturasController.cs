@@ -5,11 +5,13 @@ using InvernaderoIoT.API.Data;
 using InvernaderoIoT.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InvernaderoIoT.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class LecturasController : ControllerBase
     {
         private readonly InvernaderoDbContext _context;
@@ -19,10 +21,11 @@ namespace InvernaderoIoT.API.Controllers
             _context = context;
         }
 
+
         // ==========================================
-        // GET: api/Lecturas
-        // Obtiene todas las lecturas
+        // OBTENER TODAS LAS LECTURAS
         // ==========================================
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LecturaAmbiental>>> GetLecturas()
         {
@@ -31,41 +34,55 @@ namespace InvernaderoIoT.API.Controllers
                 .ToListAsync();
         }
 
+
         // ==========================================
-        // GET: api/Lecturas/5
-        // Obtiene una lectura específica
+        // OBTENER UNA LECTURA POR ID
         // ==========================================
+
         [HttpGet("{id}")]
         public async Task<ActionResult<LecturaAmbiental>> GetLectura(int id)
         {
-            var lectura = await _context.LecturasAmbientales
-                .FindAsync(id);
+            var lectura =
+                await _context.LecturasAmbientales
+                    .FindAsync(id);
+
 
             if (lectura == null)
             {
                 return NotFound();
             }
 
+
             return lectura;
         }
 
+
         // ==========================================
-        // POST: api/Lecturas
-        // Registra una nueva lectura
+        // CREAR UNA LECTURA
         // ==========================================
+
         [HttpPost]
         public async Task<ActionResult<LecturaAmbiental>> CrearLectura(
             LecturaAmbiental lectura)
         {
-            lectura.FechaHora = System.DateTime.Now;
+            lectura.FechaHora =
+                System.DateTime.Now;
 
-            _context.LecturasAmbientales.Add(lectura);
+
+            _context.LecturasAmbientales.Add(
+                lectura
+            );
+
 
             await _context.SaveChangesAsync();
 
+
             return CreatedAtAction(
                 nameof(GetLectura),
-                new { id = lectura.IdLectura },
+                new
+                {
+                    id = lectura.IdLectura
+                },
                 lectura
             );
         }

@@ -1,22 +1,699 @@
-﻿ </tbody>
+<!DOCTYPE html>
+<html lang="es">
 
-                </table>
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Invernadero IoT</title>
+
+    <link rel="stylesheet"
+          href="estilos.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         PANTALLA DE LOGIN
+    ====================================================== -->
+
+    <section id="pantallaLogin"
+             class="pantalla-login">
+
+        <div class="login-card">
+
+            <div class="login-logo">
+                🌱
+            </div>
+
+            <h1>
+                Invernadero IoT
+            </h1>
+
+            <p class="login-subtitulo">
+                Sistema de monitoreo y automatización
+            </p>
+
+
+            <form id="formLogin">
+
+
+                <div class="campo-login">
+
+                    <label for="usuarioLogin">
+                        Usuario
+                    </label>
+
+                    <input type="text"
+                           id="usuarioLogin"
+                           placeholder="Ingrese su usuario"
+                           autocomplete="username"
+                           required>
+
+                </div>
+
+
+                <div class="campo-login">
+
+                    <label for="passwordLogin">
+                        Contraseña
+                    </label>
+
+                    <input type="password"
+                           id="passwordLogin"
+                           placeholder="Ingrese su contraseña"
+                           autocomplete="current-password"
+                           required>
+
+                </div>
+
+
+                <button type="submit"
+                        id="btnLogin"
+                        class="btn-login">
+
+                    Iniciar sesión
+
+                </button>
+
+
+                <div id="mensajeLogin"
+                     class="mensaje-login">
+                </div>
+
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         DASHBOARD COMPLETO
+    ====================================================== -->
+
+    <div id="pantallaDashboard"
+         style="display: none;">
+
+
+        <!-- =================================================
+             ENCABEZADO
+        ================================================== -->
+
+        <header class="encabezado">
+
+
+            <div class="encabezado-izquierda">
+
+                <h1>
+                    🌱 Invernadero IoT
+                </h1>
+
+                <p>
+                    Sistema de monitoreo y automatización
+                </p>
 
             </div>
 
-        </section>
 
-    </main>
-
-
-<footer>
-
-    Sistema IoT para monitoreo de invernadero
-
-</footer>
+            <div class="encabezado-derecha">
 
 
-<script src="app.js"></script>
+                <div class="usuario-info">
+
+                    <span>
+                        Usuario:
+                    </span>
+
+                    <strong id="nombreUsuario">
+                        --
+                    </strong>
+
+                    <small id="rolUsuario">
+                        --
+                    </small>
+
+                </div>
+
+
+                <div id="estadoConexion"
+                     class="estado">
+
+                    ● Conectando...
+
+                </div>
+
+
+                <button id="btnCerrarSesion"
+                        class="btn-logout">
+
+                    Cerrar sesión
+
+                </button>
+
+
+            </div>
+
+
+        </header>
+
+
+
+        <!-- =================================================
+             CONTENIDO PRINCIPAL
+        ================================================== -->
+
+        <main class="contenedor">
+
+
+            <!-- =================================================
+                 ESTADO ACTUAL
+            ================================================== -->
+
+            <section class="resumen">
+
+
+                <div class="titulo-seccion">
+
+                    <div>
+
+                        <h2>
+                            Estado actual
+                        </h2>
+
+                        <p>
+                            Información registrada por el sistema IoT
+                        </p>
+
+                    </div>
+
+
+                    <div class="ultima-actualizacion">
+
+                        Última actualización:
+
+                        <strong id="ultimaActualizacion">
+                            --
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- TARJETAS -->
+
+                <div class="tarjetas">
+
+
+                    <!-- TEMPERATURA -->
+
+                    <div class="tarjeta temperatura">
+
+                        <div class="icono">
+                            🌡️
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Temperatura
+                            </h3>
+
+                            <p id="temperatura">
+                                -- °C
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- HUMEDAD AMBIENTAL -->
+
+                    <div class="tarjeta humedad">
+
+                        <div class="icono">
+                            💧
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Humedad ambiental
+                            </h3>
+
+                            <p id="humedadAmbiental">
+                                -- %
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- HUMEDAD DEL SUELO -->
+
+                    <div class="tarjeta suelo">
+
+                        <div class="icono">
+                            🌱
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Humedad del suelo
+                            </h3>
+
+                            <p id="humedadSuelo">
+                                --
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 CONTROL DEL SISTEMA
+            ================================================== -->
+
+            <section class="panel control-panel">
+
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>
+                            ⚙️ Control del sistema
+                        </h2>
+
+                        <p>
+                            Control automático y manual del invernadero
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- MODO -->
+
+                <div class="modo-control">
+
+
+                    <div>
+
+                        <strong>
+                            Modo de operación
+                        </strong>
+
+                        <span id="estadoModo">
+                            🤖 Automático
+                        </span>
+
+                    </div>
+
+
+                    <div class="botones-modo">
+
+                        <button id="btnAutomatico"
+                                class="btn-control">
+
+                            🤖 Automático
+
+                        </button>
+
+
+                        <button id="btnManual"
+                                class="btn-control">
+
+                            👤 Manual
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- DISPOSITIVOS -->
+
+                <div class="controles-dispositivos">
+
+
+                    <!-- VENTILADOR -->
+
+                    <div class="dispositivo">
+
+
+                        <div class="dispositivo-info">
+
+                            <div class="dispositivo-icono">
+                                🌀
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Ventilador
+                                </h3>
+
+                                <span id="estadoVentilador">
+                                    🔴 Apagado
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="botones-dispositivo">
+
+                            <button id="btnVentiladorOn"
+                                    class="btn-encender"
+                                    disabled>
+
+                                Encender
+
+                            </button>
+
+
+                            <button id="btnVentiladorOff"
+                                    class="btn-apagar"
+                                    disabled>
+
+                                Apagar
+
+                            </button>
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- BOMBA -->
+
+                    <div class="dispositivo">
+
+
+                        <div class="dispositivo-info">
+
+                            <div class="dispositivo-icono">
+                                💧
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Bomba de riego
+                                </h3>
+
+                                <span id="estadoBomba">
+                                    🔴 Apagada
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="botones-dispositivo">
+
+                            <button id="btnBombaOn"
+                                    class="btn-encender"
+                                    disabled>
+
+                                Encender
+
+                            </button>
+
+
+                            <button id="btnBombaOff"
+                                    class="btn-apagar"
+                                    disabled>
+
+                                Apagar
+
+                            </button>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 HISTORIAL
+            ================================================== -->
+
+            <section class="panel">
+
+
+                <div class="panel-header">
+
+
+                    <div>
+
+                        <h2>
+                            📊 Historial de lecturas
+                        </h2>
+
+                        <p>
+                            Lecturas registradas por el sistema
+                        </p>
+
+                    </div>
+
+
+                    <button id="btnActualizar"
+                            class="btn-actualizar">
+
+                        🔄 Actualizar
+
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- FILTROS -->
+
+                <div class="controles">
+
+
+                    <div class="control">
+
+                        <label for="buscar">
+                            🔎 Buscar
+                        </label>
+
+                        <input type="text"
+                               id="buscar"
+                               placeholder="Buscar en las lecturas...">
+
+                    </div>
+
+
+
+                    <div class="control">
+
+                        <label for="fechaBusqueda">
+                            📅 Fecha
+                        </label>
+
+                        <input type="date"
+                               id="fechaBusqueda">
+
+                    </div>
+
+
+
+                    <div class="control">
+
+                        <label for="limiteFilas">
+                            📊 Registros
+                        </label>
+
+                        <select id="limiteFilas">
+
+                            <option value="10">
+                                10
+                            </option>
+
+                            <option value="25">
+                                25
+                            </option>
+
+                            <option value="50">
+                                50
+                            </option>
+
+                            <option value="100">
+                                100
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- TABLA -->
+
+                <div class="tabla-contenedor">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    ID
+                                </th>
+
+                                <th>
+                                    Fecha y hora
+                                </th>
+
+                                <th>
+                                    Temperatura
+                                </th>
+
+                                <th>
+                                    Humedad ambiental
+                                </th>
+
+                                <th>
+                                    Humedad del suelo
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="tablaLecturas">
+
+                            <tr>
+
+                                <td colspan="5">
+                                    Cargando lecturas...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+
+                <!-- PAGINACIÓN -->
+
+                <div class="tabla-footer">
+
+
+                    <div id="contadorRegistros">
+                        0 registros
+                    </div>
+
+
+                    <div class="paginacion">
+
+                        <button id="btnAnterior"
+                                class="btn-pagina">
+
+                            ◀ Anterior
+
+                        </button>
+
+
+                        <span id="paginaActual">
+                            Página 1
+                        </span>
+
+
+                        <button id="btnSiguiente"
+                                class="btn-pagina">
+
+                            Siguiente ▶
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+        </main>
+
+
+
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
+
+        <footer>
+
+            <p>
+                Sistema IoT para monitoreo y automatización de invernadero
+            </p>
+
+            <p>
+                © 2026
+            </p>
+
+        </footer>
+
+
+    </div>
+
+
+
+    <script src="app.js"></script>
 
 </body>
 
