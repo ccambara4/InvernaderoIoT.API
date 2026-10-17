@@ -2,14 +2,23 @@
    CONFIGURACIÓN
 ========================================================= */
 
-const API_BASE_URL = "http://192.168.1.159:5000/api";
+const API_BASE_URL =
+    "http://192.168.1.159:5000/api";
 
-const API_URL = `${API_BASE_URL}/Lecturas`;
+const API_URL =
+    `${API_BASE_URL}/Lecturas`;
 
-const AUTH_URL = `${API_BASE_URL}/Auth/login`;
+const AUTH_URL =
+    `${API_BASE_URL}/Auth/login`;
 
-const CONTROL_URL = `${API_BASE_URL}/Control`;
+const CONTROL_URL =
+    `${API_BASE_URL}/Control`;
 
+const RIEGOS_URL =
+    `${API_BASE_URL}/EventosRiego`;
+
+const API_USUARIOS_URL =
+    `${API_BASE_URL}/Usuarios`;
 
 
 /* =========================================================
@@ -27,46 +36,73 @@ let registrosPorPagina = 10;
 let intervaloEstado = null;
 
 
+/* =========================================================
+   VARIABLES - HISTORIAL DE RIEGOS
+========================================================= */
+
+let todosLosRiegos = [];
+
+let riegosFiltrados = [];
+
+let paginaRiegos = 1;
+
+let registrosRiegosPorPagina = 10;
+
 
 /* =========================================================
    ELEMENTOS
 ========================================================= */
 
 const pantallaLogin =
-    document.getElementById("pantallaLogin");
+    document.getElementById(
+        "pantallaLogin"
+    );
 
 const pantallaDashboard =
-    document.getElementById("pantallaDashboard");
+    document.getElementById(
+        "pantallaDashboard"
+    );
 
 const formLogin =
-    document.getElementById("formLogin");
+    document.getElementById(
+        "formLogin"
+    );
 
 const usuarioLogin =
-    document.getElementById("usuarioLogin");
+    document.getElementById(
+        "usuarioLogin"
+    );
 
 const passwordLogin =
-    document.getElementById("passwordLogin");
+    document.getElementById(
+        "passwordLogin"
+    );
 
 const mensajeLogin =
-    document.getElementById("mensajeLogin");
+    document.getElementById(
+        "mensajeLogin"
+    );
 
 const btnLogin =
-    document.getElementById("btnLogin");
-
+    document.getElementById(
+        "btnLogin"
+    );
 
 
 /* =========================================================
    INICIO
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    verificarSesion();
+        verificarSesion();
 
-    configurarEventos();
+        configurarEventos();
 
-});
-
+    }
+);
 
 
 /* =========================================================
@@ -76,7 +112,9 @@ document.addEventListener("DOMContentLoaded", function () {
 function verificarSesion() {
 
     const token =
-        localStorage.getItem("token");
+        localStorage.getItem(
+            "token"
+        );
 
     if (token) {
 
@@ -92,21 +130,21 @@ function verificarSesion() {
 }
 
 
-
 /* =========================================================
    MOSTRAR LOGIN
 ========================================================= */
 
 function mostrarLogin() {
 
-    pantallaLogin.style.display = "flex";
+    pantallaLogin.style.display =
+        "flex";
 
-    pantallaDashboard.style.display = "none";
+    pantallaDashboard.style.display =
+        "none";
 
     detenerActualizacionEstado();
 
 }
-
 
 
 /* =========================================================
@@ -115,30 +153,45 @@ function mostrarLogin() {
 
 function mostrarDashboard() {
 
-    pantallaLogin.style.display = "none";
+    pantallaLogin.style.display =
+        "none";
 
-    pantallaDashboard.style.display = "block";
+    pantallaDashboard.style.display =
+        "block";
 
 
     const nombre =
-        localStorage.getItem("usuario");
+        localStorage.getItem(
+            "usuario"
+        );
 
     const rol =
-        localStorage.getItem("rol");
+        localStorage.getItem(
+            "rol"
+        );
 
 
     document.getElementById(
         "nombreUsuario"
-    ).textContent = nombre || "--";
+    ).textContent =
+        nombre || "--";
 
 
     document.getElementById(
         "rolUsuario"
-    ).textContent = rol || "--";
+    ).textContent =
+        rol || "--";
+
 
     aplicarPermisosRol();
 
+    configurarPanelWifi();
+
+    configurarGestionUsuarios();
+
     cargarLecturas();
+
+    cargarRiegos();
 
     obtenerEstadoControl();
 
@@ -152,33 +205,51 @@ function mostrarDashboard() {
             3000
         );
 
-    function aplicarPermisosRol() {
-
-        const rol =
-            localStorage.getItem("rol");
-
-        const esAdministrador =
-            rol === "Administrador";
-
-        const panelControl =
-            document.getElementById("panelControl");
-
-        if (!panelControl) {
-            return;
-        }
-
-        if (esAdministrador) {
-
-            panelControl.style.display = "block";
-
-        } else {
-
-            panelControl.style.display = "none";
-
-        }
-    }
 }
 
+
+/* =========================================================
+   PERMISOS POR ROL
+========================================================= */
+
+function aplicarPermisosRol() {
+
+    const rol =
+        localStorage.getItem(
+            "rol"
+        );
+
+    const esAdministrador =
+        rol === "Administrador";
+
+
+    const panelControl =
+        document.getElementById(
+            "panelControl"
+        );
+
+
+    if (!panelControl) {
+
+        return;
+
+    }
+
+
+    if (esAdministrador) {
+
+        panelControl.style.display =
+            "block";
+
+    }
+    else {
+
+        panelControl.style.display =
+            "none";
+
+    }
+
+}
 
 
 /* =========================================================
@@ -189,7 +260,9 @@ function detenerActualizacionEstado() {
 
     if (intervaloEstado) {
 
-        clearInterval(intervaloEstado);
+        clearInterval(
+            intervaloEstado
+        );
 
         intervaloEstado = null;
 
@@ -198,12 +271,13 @@ function detenerActualizacionEstado() {
 }
 
 
-
 /* =========================================================
    LOGIN
 ========================================================= */
 
-async function iniciarSesion(event) {
+async function iniciarSesion(
+    event
+) {
 
     event.preventDefault();
 
@@ -215,7 +289,10 @@ async function iniciarSesion(event) {
         passwordLogin.value;
 
 
-    if (!usuario || !password) {
+    if (
+        !usuario ||
+        !password
+    ) {
 
         mostrarMensajeLogin(
             "Ingrese usuario y contraseña."
@@ -226,34 +303,46 @@ async function iniciarSesion(event) {
     }
 
 
-    btnLogin.disabled = true;
+    btnLogin.disabled =
+        true;
 
-    btnLogin.textContent = "Ingresando...";
+    btnLogin.textContent =
+        "Ingresando...";
 
-    mostrarMensajeLogin("");
-
+    mostrarMensajeLogin(
+        ""
+    );
 
 
     try {
 
         const respuesta =
-            await fetch(AUTH_URL, {
+            await fetch(
+                AUTH_URL,
+                {
 
-                method: "POST",
+                    method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                    headers: {
 
-                body: JSON.stringify({
+                        "Content-Type":
+                            "application/json"
 
-                    usuario: usuario,
+                    },
 
-                    password: password
+                    body:
+                        JSON.stringify({
 
-                })
+                            usuario:
+                                usuario,
 
-            });
+                            password:
+                                password
+
+                        })
+
+                }
+            );
 
 
         const datos =
@@ -296,9 +385,12 @@ async function iniciarSesion(event) {
            LIMPIAR FORMULARIO
         ========================================= */
 
-        passwordLogin.value = "";
+        passwordLogin.value =
+            "";
 
-        mostrarMensajeLogin("");
+        mostrarMensajeLogin(
+            ""
+        );
 
 
         /* =========================================
@@ -311,7 +403,9 @@ async function iniciarSesion(event) {
     }
     catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
 
         mostrarMensajeLogin(
@@ -322,7 +416,8 @@ async function iniciarSesion(event) {
     }
     finally {
 
-        btnLogin.disabled = false;
+        btnLogin.disabled =
+            false;
 
         btnLogin.textContent =
             "Iniciar sesión";
@@ -332,17 +427,18 @@ async function iniciarSesion(event) {
 }
 
 
-
 /* =========================================================
    MENSAJE LOGIN
 ========================================================= */
 
-function mostrarMensajeLogin(mensaje) {
+function mostrarMensajeLogin(
+    mensaje
+) {
 
-    mensajeLogin.textContent = mensaje;
+    mensajeLogin.textContent =
+        mensaje;
 
 }
-
 
 
 /* =========================================================
@@ -351,11 +447,17 @@ function mostrarMensajeLogin(mensaje) {
 
 function cerrarSesion() {
 
-    localStorage.removeItem("token");
+    localStorage.removeItem(
+        "token"
+    );
 
-    localStorage.removeItem("usuario");
+    localStorage.removeItem(
+        "usuario"
+    );
 
-    localStorage.removeItem("rol");
+    localStorage.removeItem(
+        "rol"
+    );
 
 
     todasLasLecturas = [];
@@ -365,21 +467,30 @@ function cerrarSesion() {
     pagina = 1;
 
 
+    todosLosRiegos = [];
+
+    riegosFiltrados = [];
+
+    paginaRiegos = 1;
+
+
     detenerActualizacionEstado();
 
 
     mostrarLogin();
 
 
-    usuarioLogin.value = "";
+    usuarioLogin.value =
+        "";
 
-    passwordLogin.value = "";
+    passwordLogin.value =
+        "";
 
 
-    mensajeLogin.textContent = "";
+    mensajeLogin.textContent =
+        "";
 
 }
-
 
 
 /* =========================================================
@@ -389,7 +500,9 @@ function cerrarSesion() {
 function obtenerHeaders() {
 
     const token =
-        localStorage.getItem("token");
+        localStorage.getItem(
+            "token"
+        );
 
 
     return {
@@ -405,14 +518,17 @@ function obtenerHeaders() {
 }
 
 
-
 /* =========================================================
    MANEJAR SESIÓN EXPIRADA
 ========================================================= */
 
-function manejarRespuesta401(respuesta) {
+function manejarRespuesta401(
+    respuesta
+) {
 
-    if (respuesta.status === 401) {
+    if (
+        respuesta.status === 401
+    ) {
 
         cerrarSesion();
 
@@ -428,7 +544,6 @@ function manejarRespuesta401(respuesta) {
     return false;
 
 }
-
 
 
 /* =========================================================
@@ -455,30 +570,42 @@ async function cargarLecturas() {
 
 
         const respuesta =
-            await fetch(API_URL, {
+            await fetch(
+                API_URL,
+                {
 
-                method: "GET",
+                    method: "GET",
 
-                headers:
-                    obtenerHeaders()
+                    headers:
+                        obtenerHeaders()
 
-            });
+                }
+            );
 
 
-        if (manejarRespuesta401(respuesta)) {
+        if (
+            manejarRespuesta401(
+                respuesta
+            )
+        ) {
+
             return;
+
         }
 
 
         if (!respuesta.ok) {
 
-            if (respuesta.status === 403) {
+            if (
+                respuesta.status === 403
+            ) {
 
                 throw new Error(
                     "No tiene permisos para consultar las lecturas."
                 );
 
             }
+
 
             throw new Error(
                 "Error al consultar la API."
@@ -496,7 +623,9 @@ async function cargarLecturas() {
 
 
         lecturasFiltradas =
-            [...todasLasLecturas];
+            [
+                ...todasLasLecturas
+            ];
 
 
         pagina = 1;
@@ -517,7 +646,9 @@ async function cargarLecturas() {
     }
     catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
 
         estado.textContent =
@@ -544,12 +675,13 @@ async function cargarLecturas() {
 }
 
 
-
 /* =========================================================
    ACTUALIZAR TARJETAS
 ========================================================= */
 
-function actualizarTarjetas(lecturas) {
+function actualizarTarjetas(
+    lecturas
+) {
 
     if (
         !lecturas ||
@@ -558,22 +690,26 @@ function actualizarTarjetas(lecturas) {
 
         document.getElementById(
             "temperatura"
-        ).textContent = "-- °C";
+        ).textContent =
+            "-- °C";
 
 
         document.getElementById(
             "humedadAmbiental"
-        ).textContent = "-- %";
+        ).textContent =
+            "-- %";
 
 
         document.getElementById(
             "humedadSuelo"
-        ).textContent = "--";
+        ).textContent =
+            "--";
 
 
         document.getElementById(
             "ultimaActualizacion"
-        ).textContent = "--";
+        ).textContent =
+            "--";
 
 
         return;
@@ -603,7 +739,9 @@ function actualizarTarjetas(lecturas) {
         `${ultima.humedadSuelo ?? "--"}`;
 
 
-    if (ultima.fechaHora) {
+    if (
+        ultima.fechaHora
+    ) {
 
         document.getElementById(
             "ultimaActualizacion"
@@ -617,9 +755,8 @@ function actualizarTarjetas(lecturas) {
 }
 
 
-
 /* =========================================================
-   FILTROS
+   FILTROS DE LECTURAS
 ========================================================= */
 
 function aplicarFiltros() {
@@ -664,15 +801,17 @@ function aplicarFiltros() {
 
                 const coincideTexto =
                     !texto ||
-                    contenido.includes(texto);
-
+                    contenido.includes(
+                        texto
+                    );
 
 
                 /* ==============================
                    FECHA
                 ============================== */
 
-                let coincideFecha = true;
+                let coincideFecha =
+                    true;
 
 
                 if (
@@ -693,7 +832,8 @@ function aplicarFiltros() {
 
 
                     coincideFecha =
-                        fechaISO === fecha;
+                        fechaISO ===
+                        fecha;
 
                 }
 
@@ -715,7 +855,6 @@ function aplicarFiltros() {
 }
 
 
-
 /* =========================================================
    MOSTRAR LECTURAS
 ========================================================= */
@@ -728,11 +867,13 @@ function mostrarLecturas() {
         );
 
 
-    tabla.innerHTML = "";
+    tabla.innerHTML =
+        "";
 
 
     if (
-        lecturasFiltradas.length === 0
+        lecturasFiltradas.length ===
+        0
     ) {
 
         tabla.innerHTML = `
@@ -760,9 +901,10 @@ function mostrarLecturas() {
     }
 
 
-
     const inicio =
-        (pagina - 1) *
+        (
+            pagina - 1
+        ) *
         registrosPorPagina;
 
 
@@ -838,9 +980,8 @@ function mostrarLecturas() {
 }
 
 
-
 /* =========================================================
-   CONTADOR
+   CONTADOR DE LECTURAS
 ========================================================= */
 
 function actualizarContador() {
@@ -861,9 +1002,8 @@ function actualizarContador() {
 }
 
 
-
 /* =========================================================
-   PAGINACIÓN
+   PAGINACIÓN DE LECTURAS
 ========================================================= */
 
 function actualizarPaginacion() {
@@ -902,14 +1042,15 @@ function actualizarPaginacion() {
 }
 
 
-
 /* =========================================================
    PÁGINA ANTERIOR
 ========================================================= */
 
 function paginaAnterior() {
 
-    if (pagina > 1) {
+    if (
+        pagina > 1
+    ) {
 
         pagina--;
 
@@ -918,7 +1059,6 @@ function paginaAnterior() {
     }
 
 }
-
 
 
 /* =========================================================
@@ -934,7 +1074,10 @@ function paginaSiguiente() {
         );
 
 
-    if (pagina < totalPaginas) {
+    if (
+        pagina <
+        totalPaginas
+    ) {
 
         pagina++;
 
@@ -945,15 +1088,18 @@ function paginaSiguiente() {
 }
 
 
-
 /* =========================================================
    FORMATO DE FECHA
 ========================================================= */
 
-function formatearFecha(fecha) {
+function formatearFecha(
+    fecha
+) {
 
     const fechaObjeto =
-        new Date(fecha);
+        new Date(
+            fecha
+        );
 
 
     if (
@@ -970,13 +1116,576 @@ function formatearFecha(fecha) {
     return fechaObjeto.toLocaleString(
         "es-GT",
         {
-            dateStyle: "short",
-            timeStyle: "medium"
+
+            dateStyle:
+                "short",
+
+            timeStyle:
+                "medium"
+
         }
     );
 
 }
 
+
+/* =========================================================
+   HISTORIAL DE RIEGOS
+========================================================= */
+
+async function cargarRiegos() {
+
+    const tabla =
+        document.getElementById(
+            "tablaRiegos"
+        );
+
+
+    if (!tabla) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                RIEGOS_URL,
+                {
+
+                    method: "GET",
+
+                    headers:
+                        obtenerHeaders()
+
+                }
+            );
+
+
+        if (
+            manejarRespuesta401(
+                respuesta
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        if (!respuesta.ok) {
+
+            if (
+                respuesta.status === 403
+            ) {
+
+                throw new Error(
+                    "No tiene permisos para consultar el historial de riegos."
+                );
+
+            }
+
+
+            throw new Error(
+                "No se pudo obtener el historial de riegos."
+            );
+
+        }
+
+
+        const riegos =
+            await respuesta.json();
+
+
+        todosLosRiegos =
+            riegos || [];
+
+
+        riegosFiltrados =
+            [
+                ...todosLosRiegos
+            ];
+
+
+        paginaRiegos = 1;
+
+
+        aplicarFiltrosRiegos();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Error historial de riegos:",
+            error
+        );
+
+
+        tabla.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    No se pudo obtener
+                    el historial de riegos.
+
+                </td>
+
+            </tr>
+
+        `;
+
+
+        actualizarContadorRiegos();
+
+    }
+
+}
+
+
+/* =========================================================
+   FILTROS DE RIEGOS
+========================================================= */
+
+function aplicarFiltrosRiegos() {
+
+    const textoElemento =
+        document.getElementById(
+            "buscarRiegos"
+        );
+
+
+    const fechaElemento =
+        document.getElementById(
+            "fechaRiego"
+        );
+
+
+    const texto =
+        textoElemento
+            ? textoElemento.value
+                .toLowerCase()
+                .trim()
+            : "";
+
+
+    const fecha =
+        fechaElemento
+            ? fechaElemento.value
+            : "";
+
+
+    riegosFiltrados =
+        todosLosRiegos.filter(
+            riego => {
+
+                const tipo =
+                    riego.activadoAutomaticamente
+                        ? "automatico"
+                        : "manual";
+
+
+                const contenido = `
+
+                    ${riego.idRiego ?? ""}
+
+                    ${tipo}
+
+                    ${riego.fechaHoraInicio ?? ""}
+
+                    ${riego.fechaHoraFin ?? ""}
+
+                    ${riego.duracionSegundos ?? ""}
+
+                `.toLowerCase();
+
+
+                const coincideTexto =
+                    !texto ||
+                    contenido.includes(
+                        texto
+                    );
+
+
+                let coincideFecha =
+                    true;
+
+
+                if (fecha) {
+
+                    const fechas = [];
+
+
+                    if (
+                        riego.fechaHoraInicio
+                    ) {
+
+                        fechas.push(
+                            new Date(
+                                riego.fechaHoraInicio
+                            )
+                        );
+
+                    }
+
+
+                    if (
+                        riego.fechaHoraFin
+                    ) {
+
+                        fechas.push(
+                            new Date(
+                                riego.fechaHoraFin
+                            )
+                        );
+
+                    }
+
+
+                    coincideFecha =
+                        fechas.some(
+                            fechaRiegoObjeto => {
+
+                                if (
+                                    isNaN(
+                                        fechaRiegoObjeto.getTime()
+                                    )
+                                ) {
+
+                                    return false;
+
+                                }
+
+
+                                const fechaISO =
+                                    fechaRiegoObjeto
+                                        .toISOString()
+                                        .split("T")[0];
+
+
+                                return (
+                                    fechaISO ===
+                                    fecha
+                                );
+
+                            }
+                        );
+
+                }
+
+
+                return (
+                    coincideTexto &&
+                    coincideFecha
+                );
+
+            }
+        );
+
+
+    paginaRiegos = 1;
+
+
+    mostrarRiegos();
+
+}
+
+
+/* =========================================================
+   MOSTRAR RIEGOS
+========================================================= */
+
+function mostrarRiegos() {
+
+    const tabla =
+        document.getElementById(
+            "tablaRiegos"
+        );
+
+
+    if (!tabla) {
+
+        return;
+
+    }
+
+
+    tabla.innerHTML =
+        "";
+
+
+    if (
+        riegosFiltrados.length ===
+        0
+    ) {
+
+        tabla.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    No existen riegos
+                    que coincidan con los filtros.
+
+                </td>
+
+            </tr>
+
+        `;
+
+
+        actualizarContadorRiegos();
+
+        actualizarPaginacionRiegos();
+
+        return;
+
+    }
+
+
+    const inicio =
+        (
+            paginaRiegos - 1
+        ) *
+        registrosRiegosPorPagina;
+
+
+    const fin =
+        inicio +
+        registrosRiegosPorPagina;
+
+
+    const registros =
+        riegosFiltrados.slice(
+            inicio,
+            fin
+        );
+
+
+    registros.forEach(
+        riego => {
+
+            const fechaInicio =
+                riego.fechaHoraInicio
+                    ? formatearFecha(
+                        riego.fechaHoraInicio
+                    )
+                    : "--";
+
+
+            const fechaFin =
+                riego.fechaHoraFin
+                    ? formatearFecha(
+                        riego.fechaHoraFin
+                    )
+                    : "En curso";
+
+
+            const duracion =
+                riego.duracionSegundos != null
+                    ? `${riego.duracionSegundos} segundo${riego.duracionSegundos === 1 ? "" : "s"}`
+                    : "En curso";
+
+
+            const tipo =
+                riego.activadoAutomaticamente
+                    ? "🤖 Automático"
+                    : "👤 Manual";
+
+
+            const fila =
+                document.createElement(
+                    "tr"
+                );
+
+
+            fila.innerHTML = `
+
+                <td>
+                    ${riego.idRiego ?? "--"}
+                </td>
+
+                <td>
+                    ${fechaInicio}
+                </td>
+
+                <td>
+                    ${fechaFin}
+                </td>
+
+                <td>
+                    ${duracion}
+                </td>
+
+                <td>
+                    ${tipo}
+                </td>
+
+            `;
+
+
+            tabla.appendChild(
+                fila
+            );
+
+        }
+    );
+
+
+    actualizarContadorRiegos();
+
+    actualizarPaginacionRiegos();
+
+}
+
+
+/* =========================================================
+   CONTADOR DE RIEGOS
+========================================================= */
+
+function actualizarContadorRiegos() {
+
+    const contador =
+        document.getElementById(
+            "contadorRiegos"
+        );
+
+
+    if (!contador) {
+
+        return;
+
+    }
+
+
+    const total =
+        riegosFiltrados.length;
+
+
+    contador.textContent =
+        `${total} registro${total === 1 ? "" : "s"}`;
+
+}
+
+
+/* =========================================================
+   PAGINACIÓN DE RIEGOS
+========================================================= */
+
+function actualizarPaginacionRiegos() {
+
+    const paginaElemento =
+        document.getElementById(
+            "paginaRiegos"
+        );
+
+
+    const btnAnterior =
+        document.getElementById(
+            "btnAnteriorRiegos"
+        );
+
+
+    const btnSiguiente =
+        document.getElementById(
+            "btnSiguienteRiegos"
+        );
+
+
+    if (
+        !paginaElemento ||
+        !btnAnterior ||
+        !btnSiguiente
+    ) {
+
+        return;
+
+    }
+
+
+    const totalPaginas =
+        Math.max(
+            1,
+            Math.ceil(
+                riegosFiltrados.length /
+                registrosRiegosPorPagina
+            )
+        );
+
+
+    if (
+        paginaRiegos >
+        totalPaginas
+    ) {
+
+        paginaRiegos =
+            totalPaginas;
+
+    }
+
+
+    paginaElemento.textContent =
+        `Página ${paginaRiegos} de ${totalPaginas}`;
+
+
+    btnAnterior.disabled =
+        paginaRiegos <= 1;
+
+
+    btnSiguiente.disabled =
+        paginaRiegos >= totalPaginas;
+
+}
+
+
+/* =========================================================
+   PÁGINA ANTERIOR - RIEGOS
+========================================================= */
+
+function paginaAnteriorRiegos() {
+
+    if (
+        paginaRiegos > 1
+    ) {
+
+        paginaRiegos--;
+
+        mostrarRiegos();
+
+    }
+
+}
+
+
+/* =========================================================
+   PÁGINA SIGUIENTE - RIEGOS
+========================================================= */
+
+function paginaSiguienteRiegos() {
+
+    const totalPaginas =
+        Math.ceil(
+            riegosFiltrados.length /
+            registrosRiegosPorPagina
+        );
+
+
+    if (
+        paginaRiegos <
+        totalPaginas
+    ) {
+
+        paginaRiegos++;
+
+        mostrarRiegos();
+
+    }
+
+}
 
 
 /* =========================================================
@@ -1043,29 +1752,34 @@ async function obtenerEstadoControl() {
 }
 
 
-
 /* =========================================================
    ACTUALIZAR ESTADO DEL CONTROL
 ========================================================= */
 
-function actualizarEstadoControl(estado) {
+function actualizarEstadoControl(
+    estado
+) {
 
     if (!estado) {
+
         return;
+
     }
+
 
     const automatico =
         estado.modoAutomatico ??
         estado.ModoAutomatico ??
         true;
 
-    // La API devuelve "encendido" / "apagado"
+
     const ventiladorRaw =
         estado.ventilador ??
         estado.Ventilador ??
         estado.ventiladorEncendido ??
         estado.VentiladorEncendido ??
         false;
+
 
     const bombaRaw =
         estado.bomba ??
@@ -1074,18 +1788,20 @@ function actualizarEstadoControl(estado) {
         estado.BombaEncendida ??
         false;
 
+
     const ventilador =
         ventiladorRaw === true ||
         ventiladorRaw === "encendido";
+
 
     const bomba =
         bombaRaw === true ||
         bombaRaw === "encendido";
 
 
-    // ==============================
-    // MODO
-    // ==============================
+    /* ==============================
+       MODO
+    ============================== */
 
     document.getElementById(
         "estadoModo"
@@ -1095,9 +1811,9 @@ function actualizarEstadoControl(estado) {
             : "👤 Manual";
 
 
-    // ==============================
-    // VENTILADOR
-    // ==============================
+    /* ==============================
+       VENTILADOR
+    ============================== */
 
     document.getElementById(
         "estadoVentilador"
@@ -1107,9 +1823,9 @@ function actualizarEstadoControl(estado) {
             : "🔴 Apagado";
 
 
-    // ==============================
-    // BOMBA
-    // ==============================
+    /* ==============================
+       BOMBA
+    ============================== */
 
     document.getElementById(
         "estadoBomba"
@@ -1119,34 +1835,39 @@ function actualizarEstadoControl(estado) {
             : "🔴 Apagada";
 
 
-    // ==============================
-    // CONTROLES
-    // ==============================
+    /* ==============================
+       BOTONES
+    ============================== */
 
     const btnVentiladorOn =
         document.getElementById(
             "btnVentiladorOn"
         );
 
+
     const btnVentiladorOff =
         document.getElementById(
             "btnVentiladorOff"
         );
+
 
     const btnBombaOn =
         document.getElementById(
             "btnBombaOn"
         );
 
+
     const btnBombaOff =
         document.getElementById(
             "btnBombaOff"
         );
 
+
     const btnAutomatico =
         document.getElementById(
             "btnAutomatico"
         );
+
 
     const btnManual =
         document.getElementById(
@@ -1154,45 +1875,49 @@ function actualizarEstadoControl(estado) {
         );
 
 
-    // ==============================
-    // PERMISOS POR ROL
-    // ==============================
+    /* ==============================
+       PERMISOS
+    ============================== */
 
     const rol =
-        localStorage.getItem("rol");
+        localStorage.getItem(
+            "rol"
+        );
+
 
     const esAdministrador =
         rol === "Administrador";
 
 
-    // Solo Administrador puede
-    // utilizar los controles.
     const permitirControl =
-        esAdministrador && !automatico;
+        esAdministrador &&
+        !automatico;
 
 
     btnVentiladorOn.disabled =
         !permitirControl;
 
+
     btnVentiladorOff.disabled =
         !permitirControl;
 
+
     btnBombaOn.disabled =
         !permitirControl;
+
 
     btnBombaOff.disabled =
         !permitirControl;
 
 
-    // Los botones de cambio de modo
-    // también son exclusivos del administrador.
     btnAutomatico.disabled =
         !esAdministrador;
 
+
     btnManual.disabled =
         !esAdministrador;
-}
 
+}
 
 
 /* =========================================================
@@ -1265,7 +1990,6 @@ async function enviarComando(
 }
 
 
-
 /* =========================================================
    CONFIGURAR EVENTOS
 ========================================================= */
@@ -1283,7 +2007,6 @@ function configurarEventos() {
     );
 
 
-
     /* ==============================
        CERRAR SESIÓN
     ============================== */
@@ -1298,9 +2021,8 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       ACTUALIZAR
+       ACTUALIZAR LECTURAS
     ============================== */
 
     document
@@ -1313,9 +2035,22 @@ function configurarEventos() {
         );
 
 
+    /* ==============================
+       ACTUALIZAR RIEGOS
+    ============================== */
+
+    document
+        .getElementById(
+            "btnActualizarRiegos"
+        )
+        .addEventListener(
+            "click",
+            cargarRiegos
+        );
+
 
     /* ==============================
-       FILTRO TEXTO
+       FILTRO TEXTO - LECTURAS
     ============================== */
 
     document
@@ -1328,9 +2063,8 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       FILTRO FECHA
+       FILTRO FECHA - LECTURAS
     ============================== */
 
     document
@@ -1343,9 +2077,9 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       CANTIDAD REGISTROS
+       CANTIDAD DE REGISTROS
+       - LECTURAS
     ============================== */
 
     document
@@ -1371,9 +2105,8 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       PAGINACIÓN
+       PAGINACIÓN - LECTURAS
     ============================== */
 
     document
@@ -1396,6 +2129,85 @@ function configurarEventos() {
         );
 
 
+    /* ==============================
+       FILTRO TEXTO - RIEGOS
+    ============================== */
+
+    document
+        .getElementById(
+            "buscarRiegos"
+        )
+        .addEventListener(
+            "input",
+            aplicarFiltrosRiegos
+        );
+
+
+    /* ==============================
+       FILTRO FECHA - RIEGOS
+    ============================== */
+
+    document
+        .getElementById(
+            "fechaRiego"
+        )
+        .addEventListener(
+            "change",
+            aplicarFiltrosRiegos
+        );
+
+
+    /* ==============================
+       CANTIDAD DE REGISTROS
+       - RIEGOS
+    ============================== */
+
+    document
+        .getElementById(
+            "limiteRiegos"
+        )
+        .addEventListener(
+            "change",
+            function () {
+
+                registrosRiegosPorPagina =
+                    parseInt(
+                        this.value
+                    );
+
+
+                paginaRiegos = 1;
+
+
+                mostrarRiegos();
+
+            }
+        );
+
+
+    /* ==============================
+       PAGINACIÓN - RIEGOS
+    ============================== */
+
+    document
+        .getElementById(
+            "btnAnteriorRiegos"
+        )
+        .addEventListener(
+            "click",
+            paginaAnteriorRiegos
+        );
+
+
+    document
+        .getElementById(
+            "btnSiguienteRiegos"
+        )
+        .addEventListener(
+            "click",
+            paginaSiguienteRiegos
+        );
+
 
     /* ==============================
        MODO AUTOMÁTICO
@@ -1415,7 +2227,6 @@ function configurarEventos() {
 
             }
         );
-
 
 
     /* ==============================
@@ -1438,9 +2249,8 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       VENTILADOR ON
+       VENTILADOR ENCENDER
     ============================== */
 
     document
@@ -1459,9 +2269,8 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       VENTILADOR OFF
+       VENTILADOR APAGAR
     ============================== */
 
     document
@@ -1480,9 +2289,8 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       BOMBA ON
+       BOMBA ENCENDER
     ============================== */
 
     document
@@ -1501,9 +2309,8 @@ function configurarEventos() {
         );
 
 
-
     /* ==============================
-       BOMBA OFF
+       BOMBA APAGAR
     ============================== */
 
     document
@@ -1521,4 +2328,341 @@ function configurarEventos() {
             }
         );
 
+}
+
+/* =========================================================
+   GESTIÓN DE USUARIOS - INVERNADERO IoT JULKY
+========================================================= */
+
+
+async function cargarUsuarios() {
+    const tabla = document.getElementById("tablaUsuarios");
+    const mensaje = document.getElementById("mensajeUsuarios");
+
+    if (!tabla) return;
+
+    // Comprobación de interfaz; la API también debe autorizar.
+    if (localStorage.getItem("rol") !== "Administrador") {
+        return;
+    }
+
+    tabla.replaceChildren();
+
+    const filaCarga = document.createElement("tr");
+    const celdaCarga = document.createElement("td");
+    celdaCarga.colSpan = 6;
+    celdaCarga.textContent = "Cargando usuarios...";
+    filaCarga.appendChild(celdaCarga);
+    tabla.appendChild(filaCarga);
+
+    try {
+        const respuesta = await fetch(API_USUARIOS_URL, {
+            method: "GET",
+            headers: obtenerHeaders()
+        });
+
+        if (manejarRespuesta401(respuesta)) return;
+
+        if (!respuesta.ok) {
+            throw new Error(
+                respuesta.status === 403
+                    ? "No tienes permisos para consultar usuarios."
+                    : `Error al consultar usuarios: HTTP ${respuesta.status}.`
+            );
+        }
+
+        const usuarios = await respuesta.json();
+
+        tabla.replaceChildren();
+
+        if (!Array.isArray(usuarios) || usuarios.length === 0) {
+            const fila = document.createElement("tr");
+            const celda = document.createElement("td");
+            celda.colSpan = 6;
+            celda.textContent = "No hay usuarios registrados.";
+            fila.appendChild(celda);
+            tabla.appendChild(fila);
+            return;
+        }
+
+        usuarios.forEach(usuario => {
+            const fila = document.createElement("tr");
+
+            // Admite distintos nombres de propiedades JSON.
+            const id = usuario.idUsuario ?? usuario.IdUsuario ?? "--";
+            const nombre = usuario.nombre ?? usuario.Nombre ?? "--";
+            const nombreUsuario =
+                usuario.usuarioNombre ?? usuario.UsuarioNombre ?? "--";
+            const rol =
+                usuario.rol ?? usuario.nombreRol ??
+                usuario.NombreRol ?? usuario.rolNombre ?? "--";
+            const activo = usuario.activo ?? usuario.Activo;
+
+            [
+                id,
+                nombre,
+                nombreUsuario,
+                rol,
+                activo === undefined ? "--" : (activo ? "Activo" : "Inactivo")
+            ].forEach(valor => {
+                const celda = document.createElement("td");
+                celda.textContent = String(valor);
+                fila.appendChild(celda);
+            });
+            // Columna de acciones
+            const celdaAcciones = document.createElement("td");
+
+            const botonEliminar = document.createElement("button");
+            botonEliminar.type = "button";
+            botonEliminar.textContent = "🗑️ Eliminar";
+            botonEliminar.className = "btn-eliminar";
+
+            botonEliminar.addEventListener("click", () => {
+                eliminarUsuario(id, nombreUsuario);
+            });
+
+            celdaAcciones.appendChild(botonEliminar);
+            fila.appendChild(celdaAcciones);
+
+            tabla.appendChild(fila);
+        });
+
+        if (mensaje) mensaje.textContent = "";
+
+    } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+
+        tabla.replaceChildren();
+
+        const fila = document.createElement("tr");
+        const celda = document.createElement("td");
+        celda.colSpan = 6;
+        celda.textContent = error.message;
+        fila.appendChild(celda);
+        tabla.appendChild(fila);
+    }
+}
+
+async function crearUsuario(event) {
+    event.preventDefault();
+
+    const mensaje = document.getElementById("mensajeUsuarios");
+    const boton = document.getElementById("btnCrearUsuario");
+
+    if (localStorage.getItem("rol") !== "Administrador") {
+        mensaje.textContent = "No tienes permisos para crear usuarios.";
+        return;
+    }
+
+    const nombre = document.getElementById("nuevoNombre").value.trim();
+    const usuarioNombre =
+        document.getElementById("nuevoUsuario").value.trim();
+    const password = document.getElementById("nuevaPassword").value;
+    const idRol = Number(document.getElementById("nuevoRol").value);
+
+    if (!nombre || !usuarioNombre || !password) {
+        mensaje.textContent = "Completa todos los campos.";
+        return;
+    }
+
+    if (password.length < 8) {
+        mensaje.textContent =
+            "La contraseña debe tener al menos 8 caracteres.";
+        return;
+    }
+
+    // Estos IDs deben coincidir con la tabla Roles de SQL Server.
+    if (![1, 2].includes(idRol)) {
+        mensaje.textContent = "El rol seleccionado no es válido.";
+        return;
+    }
+
+    boton.disabled = true;
+    mensaje.textContent = "Creando usuario...";
+
+    try {
+        const respuesta = await fetch(API_USUARIOS_URL, {
+            method: "POST",
+            headers: obtenerHeaders(),
+            body: JSON.stringify({
+                nombre: nombre,
+                usuario: usuarioNombre,
+                password: password,
+                idRol: idRol
+            })
+        });
+
+        if (manejarRespuesta401(respuesta)) return;
+
+        if (!respuesta.ok) {
+            const detalle = await respuesta.text();
+
+            throw new Error(
+                respuesta.status === 403
+                    ? "La API rechazó la operación. Se requiere rol Administrador."
+                    : detalle || `No se pudo crear el usuario (HTTP ${respuesta.status}).`
+            );
+        }
+
+        mensaje.textContent = "Usuario creado correctamente.";
+
+        document.getElementById("formCrearUsuario").reset();
+
+        await cargarUsuarios();
+
+    } catch (error) {
+        console.error("Error al crear usuario:", error);
+        mensaje.textContent = error.message;
+    } finally {
+        boton.disabled = false;
+    }
+}
+
+function configurarGestionUsuarios() {
+    const panel = document.getElementById("seccionUsuarios");
+    const rol = localStorage.getItem("rol");
+
+    if (!panel) return;
+
+    const esAdministrador = rol === "Administrador";
+    panel.style.display = esAdministrador ? "block" : "none";
+
+    if (!esAdministrador) return;
+
+    const formulario = document.getElementById("formCrearUsuario");
+    const botonActualizar =
+        document.getElementById("btnActualizarUsuarios");
+
+    // Evita registrar los eventos más de una vez.
+    if (formulario && formulario.dataset.configurado !== "true") {
+        formulario.addEventListener("submit", crearUsuario);
+        formulario.dataset.configurado = "true";
+    }
+
+    if (botonActualizar &&
+        botonActualizar.dataset.configurado !== "true") {
+        botonActualizar.addEventListener("click", cargarUsuarios);
+        botonActualizar.dataset.configurado = "true";
+    }
+
+    cargarUsuarios();
+}
+
+async function eliminarUsuario(id, nombreUsuario) {
+        if (localStorage.getItem("rol") !== "Administrador") {
+            alert("No tienes permisos para eliminar usuarios.");
+            return;
+        }
+
+        if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
+            alert("El identificador del usuario no es válido.");
+            return;
+        }
+
+        const confirmar = confirm(
+            `¿Estás seguro de que deseas eliminar al usuario "${nombreUsuario}"? Esta acción no se puede deshacer.`
+        );
+
+        if (!confirmar) return;
+
+        try {
+            const respuesta = await fetch(
+                `${API_USUARIOS_URL}/${Number(id)}`,
+                {
+                    method: "DELETE",
+                    headers: obtenerHeaders()
+                }
+            );
+
+            if (manejarRespuesta401(respuesta)) return;
+
+            const texto = await respuesta.text();
+            let datos = {};
+
+            try {
+                datos = texto ? JSON.parse(texto) : {};
+            } catch {
+                datos = {};
+            }
+
+            if (!respuesta.ok) {
+                throw new Error(
+                    datos.mensaje ||
+                    `No se pudo eliminar el usuario (HTTP ${respuesta.status}).`
+                );
+            }
+
+            alert(datos.mensaje || "Usuario eliminado correctamente.");
+            await cargarUsuarios();
+
+        } catch (error) {
+            console.error("Error al eliminar usuario:", error);
+            alert(error.message || "Error al eliminar el usuario.");
+        }
+}
+
+function configurarPanelWifi() {
+    const panel = document.getElementById("seccionWifi");
+    const boton = document.getElementById("btnConfigurarWifi");
+
+    if (!panel || !boton) return;
+
+    const esAdministrador =
+        localStorage.getItem("rol") === "Administrador";
+
+    panel.style.display = esAdministrador ? "block" : "none";
+
+    boton.onclick = solicitarCambioWifi;
+}
+
+
+async function solicitarCambioWifi() {
+    const boton = document.getElementById("btnConfigurarWifi");
+    const mensaje = document.getElementById("mensajeWifi");
+
+    if (localStorage.getItem("rol") !== "Administrador") {
+        mensaje.textContent = "No tienes permisos para realizar esta acción.";
+        return;
+    }
+
+    const confirmar = confirm(
+        "El ESP32 activará la red WIFI-ESP32. " +
+        "La comunicación con la API se interrumpirá temporalmente. " +
+        "¿Deseas continuar?"
+    );
+
+    if (!confirmar) return;
+
+    boton.disabled = true;
+    mensaje.textContent = "Enviando solicitud al dispositivo...";
+
+    try {
+        const respuesta = await fetch(
+            `${CONTROL_URL}/wifi/configurar`,
+            {
+                method: "POST",
+                headers: obtenerHeaders()
+            }
+        );
+
+        if (manejarRespuesta401(respuesta)) return;
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(
+                datos.mensaje || "No se pudo solicitar la configuración Wi-Fi."
+            );
+        }
+
+        mensaje.textContent =
+            "Solicitud enviada. Cuando se active el punto de acceso, " +
+            "conéctate a WIFI-ESP32 con la contraseña Conexion y abre " +
+            "http://192.168.4.1";
+
+    } catch (error) {
+        mensaje.textContent = error.message;
+    } finally {
+        boton.disabled = false;
+    }
 }

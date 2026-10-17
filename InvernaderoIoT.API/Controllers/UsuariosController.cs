@@ -4,6 +4,7 @@ using InvernaderoIoT.API.Data;
 using InvernaderoIoT.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace InvernaderoIoT.API.Controllers
 {
@@ -100,6 +101,41 @@ namespace InvernaderoIoT.API.Controllers
                 .ToList();
 
             return Ok(usuarios);
+        }
+
+        [HttpDelete("{id:int}")]
+        public IActionResult EliminarUsuario(int id)
+        {
+            var usuario = _context.Usuarios
+                .FirstOrDefault(u => u.IdUsuario == id);
+
+            if (usuario == null)
+            {
+                return NotFound(new
+                {
+                    mensaje = "El usuario no existe."
+                });
+            }
+
+            // Evitar que el administrador elimine su propia cuenta.
+            if (string.Equals(
+                User.Identity?.Name,
+                usuario.UsuarioNombre,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new
+                {
+                    mensaje = "No puedes eliminar tu propia cuenta."
+                });
+            }
+
+            _context.Usuarios.Remove(usuario);
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                mensaje = "Usuario eliminado correctamente."
+            });
         }
     }
 

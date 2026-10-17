@@ -39,6 +39,8 @@ namespace InvernaderoIoT.API.Controllers
 
         private static int? idEventoRiegoActual = null;
 
+        private static bool solicitarConfiguracionWifi = false;
+
         // ==========================================
         // VERIFICAR TIEMPO DEL MODO MANUAL
         // ==========================================
@@ -109,7 +111,9 @@ namespace InvernaderoIoT.API.Controllers
                     : "apagado",
 
                 segundosRestantes =
-                    segundosRestantes
+                    segundosRestantes,
+
+                solicitarConfiguracionWifi = solicitarConfiguracionWifi
             });
         }
 
@@ -375,6 +379,35 @@ private void CrearEventoRiego()
             }
 
             idEventoRiegoActual = null;
+        }
+
+        // Solicitar modo de configuración Wi-Fi.
+        // Solo administradores pueden solicitarlo.
+        [HttpPost("wifi/configurar")]
+        [Authorize(Roles = "Administrador")]
+        public IActionResult SolicitarConfiguracionWifi()
+        {
+            solicitarConfiguracionWifi = true;
+
+            return Ok(new
+            {
+                mensaje = "Solicitud de configuración Wi-Fi enviada."
+            });
+        }
+
+
+        // El ESP32 llama a este endpoint cuando termina
+        // el proceso de configuración Wi-Fi.
+        [HttpPost("wifi/configuracion/completada")]
+        [AllowAnonymous]
+        public IActionResult ConfiguracionWifiCompletada()
+        {
+            solicitarConfiguracionWifi = false;
+
+            return Ok(new
+            {
+                mensaje = "Configuración Wi-Fi finalizada."
+            });
         }
     }
 }
