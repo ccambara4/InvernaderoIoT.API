@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    CONFIGURACIÓN
 ========================================================= */
 
@@ -100,6 +100,7 @@ document.addEventListener(
         verificarSesion();
 
         configurarEventos();
+        configurarEstadisticas();
 
     }
 );
@@ -185,13 +186,14 @@ function mostrarDashboard() {
 
     aplicarPermisosRol();
 
-    configurarPanelWifi();
-
     configurarGestionUsuarios();
 
     cargarLecturas();
 
     cargarRiegos();
+
+    cargarEstadisticasDiarias();
+    cargarEstadisticasMensuales();
 
     obtenerEstadoControl();
 
@@ -222,6 +224,11 @@ function aplicarPermisosRol() {
     const esAdministrador =
         rol === "Administrador";
 
+    // La configuración Wi-Fi se muestra únicamente al administrador.
+    const seccionWifi = document.getElementById("seccionWifi");
+    if (seccionWifi) {
+        seccionWifi.style.display = esAdministrador ? "block" : "none";
+    }
 
     const panelControl =
         document.getElementById(
@@ -2328,6 +2335,74 @@ function configurarEventos() {
             }
         );
 
+
+    // El botón queda enlazado y explica el requisito pendiente si la API/firmware
+    // aún no expone una ruta para activar el punto de acceso del ESP32.
+    const btnWifi = document.getElementById("btnConfigurarWifi");
+
+    if (btnWifi && btnWifi.dataset.configurado !== "true") {
+        btnWifi.addEventListener("click", async function () {
+            const mensaje = document.getElementById("mensajeWifi");
+
+            btnWifi.disabled = true;
+
+            if (mensaje) {
+                mensaje.textContent = "Enviando solicitud al ESP32...";
+            }
+
+            try {
+                const respuesta = await fetch(
+                    `${CONTROL_URL}/wifi/configurar`,
+                    {
+                        method: "POST",
+                        headers: obtenerHeaders()
+                    }
+                );
+
+                if (manejarRespuesta401(respuesta)) {
+                    return;
+                }
+
+                const texto = await respuesta.text();
+                let datos = {};
+
+                try {
+                    datos = texto ? JSON.parse(texto) : {};
+                } catch {
+                    datos = { mensaje: texto };
+                }
+
+                if (!respuesta.ok) {
+                    throw new Error(
+                        datos.mensaje ||
+                        datos.message ||
+                        `Error HTTP ${respuesta.status}`
+                    );
+                }
+
+                if (mensaje) {
+                    mensaje.textContent =
+                        datos.mensaje ||
+                        datos.message ||
+                        "Solicitud enviada. Comprueba que el ESP32 active la red WIFI-ESP32.";
+                }
+
+            } catch (error) {
+                console.error("Error al configurar Wi-Fi:", error);
+
+                if (mensaje) {
+                    mensaje.textContent =
+                        "No se pudo solicitar la configuración Wi-Fi: " +
+                        error.message;
+                }
+            } finally {
+                btnWifi.disabled = false;
+            }
+        });
+
+        btnWifi.dataset.configurado = "true";
+    }
+
 }
 
 /* =========================================================
@@ -2350,7 +2425,7 @@ async function cargarUsuarios() {
 
     const filaCarga = document.createElement("tr");
     const celdaCarga = document.createElement("td");
-    celdaCarga.colSpan = 6;
+    celdaCarga.colSpan = 5;
     celdaCarga.textContent = "Cargando usuarios...";
     filaCarga.appendChild(celdaCarga);
     tabla.appendChild(filaCarga);
@@ -2391,7 +2466,10 @@ async function cargarUsuarios() {
             // Admite distintos nombres de propiedades JSON.
             const id = usuario.idUsuario ?? usuario.IdUsuario ?? "--";
             const nombre = usuario.nombre ?? usuario.Nombre ?? "--";
+            // La API UsuariosController devuelve la propiedad "usuario".
+            // Se mantienen alternativas por compatibilidad con otras respuestas.
             const nombreUsuario =
+                usuario.usuario ?? usuario.Usuario ??
                 usuario.usuarioNombre ?? usuario.UsuarioNombre ?? "--";
             const rol =
                 usuario.rol ?? usuario.nombreRol ??
@@ -2423,7 +2501,6 @@ async function cargarUsuarios() {
 
             celdaAcciones.appendChild(botonEliminar);
             fila.appendChild(celdaAcciones);
-
             tabla.appendChild(fila);
         });
 
@@ -2549,120 +2626,187 @@ function configurarGestionUsuarios() {
 }
 
 async function eliminarUsuario(id, nombreUsuario) {
-        if (localStorage.getItem("rol") !== "Administrador") {
-            alert("No tienes permisos para eliminar usuarios.");
-            return;
-        }
-
-        if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
-            alert("El identificador del usuario no es válido.");
-            return;
-        }
-
-        const confirmar = confirm(
-            `¿Estás seguro de que deseas eliminar al usuario "${nombreUsuario}"? Esta acción no se puede deshacer.`
-        );
-
-        if (!confirmar) return;
-
-        try {
-            const respuesta = await fetch(
-                `${API_USUARIOS_URL}/${Number(id)}`,
-                {
-                    method: "DELETE",
-                    headers: obtenerHeaders()
-                }
-            );
-
-            if (manejarRespuesta401(respuesta)) return;
-
-            const texto = await respuesta.text();
-            let datos = {};
-
-            try {
-                datos = texto ? JSON.parse(texto) : {};
-            } catch {
-                datos = {};
-            }
-
-            if (!respuesta.ok) {
-                throw new Error(
-                    datos.mensaje ||
-                    `No se pudo eliminar el usuario (HTTP ${respuesta.status}).`
-                );
-            }
-
-            alert(datos.mensaje || "Usuario eliminado correctamente.");
-            await cargarUsuarios();
-
-        } catch (error) {
-            console.error("Error al eliminar usuario:", error);
-            alert(error.message || "Error al eliminar el usuario.");
-        }
-}
-
-function configurarPanelWifi() {
-    const panel = document.getElementById("seccionWifi");
-    const boton = document.getElementById("btnConfigurarWifi");
-
-    if (!panel || !boton) return;
-
-    const esAdministrador =
-        localStorage.getItem("rol") === "Administrador";
-
-    panel.style.display = esAdministrador ? "block" : "none";
-
-    boton.onclick = solicitarCambioWifi;
-}
-
-
-async function solicitarCambioWifi() {
-    const boton = document.getElementById("btnConfigurarWifi");
-    const mensaje = document.getElementById("mensajeWifi");
-
     if (localStorage.getItem("rol") !== "Administrador") {
-        mensaje.textContent = "No tienes permisos para realizar esta acción.";
+        alert("No tienes permisos para eliminar usuarios.");
+        return;
+    }
+
+    if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
+        alert("El identificador del usuario no es válido.");
         return;
     }
 
     const confirmar = confirm(
-        "El ESP32 activará la red WIFI-ESP32. " +
-        "La comunicación con la API se interrumpirá temporalmente. " +
-        "¿Deseas continuar?"
+        `¿Estás seguro de que deseas eliminar al usuario "${nombreUsuario}"? Esta acción no se puede deshacer.`
     );
 
     if (!confirmar) return;
 
-    boton.disabled = true;
-    mensaje.textContent = "Enviando solicitud al dispositivo...";
-
     try {
         const respuesta = await fetch(
-            `${CONTROL_URL}/wifi/configurar`,
+            `${API_USUARIOS_URL}/${Number(id)}`,
             {
-                method: "POST",
+                method: "DELETE",
                 headers: obtenerHeaders()
             }
         );
 
         if (manejarRespuesta401(respuesta)) return;
 
-        const datos = await respuesta.json();
+        const texto = await respuesta.text();
+        let datos = {};
+
+        try {
+            datos = texto ? JSON.parse(texto) : {};
+        } catch {
+            datos = {};
+        }
 
         if (!respuesta.ok) {
             throw new Error(
-                datos.mensaje || "No se pudo solicitar la configuración Wi-Fi."
+                datos.mensaje ||
+                `No se pudo eliminar el usuario (HTTP ${respuesta.status}).`
             );
         }
 
-        mensaje.textContent =
-            "Solicitud enviada. Cuando se active el punto de acceso, " +
-            "conéctate a WIFI-ESP32 con la contraseña Conexion y abre " +
-            "http://192.168.4.1";
+        alert(datos.mensaje || "Usuario eliminado correctamente.");
+        await cargarUsuarios();
 
     } catch (error) {
-        mensaje.textContent = error.message;
-    } finally {
-        boton.disabled = false;
+        console.error("Error al eliminar usuario:", error);
+        alert(error.message || "Error al eliminar el usuario.");
     }
+}
+
+/* =========================================================
+   ESTADÍSTICAS AMBIENTALES
+========================================================= */
+
+const MESES_ESTADISTICAS = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+];
+
+function configurarEstadisticas() {
+    const selectorMes = document.getElementById("mesEstadisticas");
+    const selectorAnio = document.getElementById("anioEstadisticas");
+    if (!selectorMes || !selectorAnio) return;
+
+    MESES_ESTADISTICAS.forEach((nombre, indice) => {
+        const opcion = document.createElement("option");
+        opcion.value = String(indice + 1);
+        opcion.textContent = nombre;
+        selectorMes.appendChild(opcion);
+    });
+
+    const anioActual = new Date().getFullYear();
+    for (let anio = anioActual; anio >= anioActual - 5; anio--) {
+        const opcion = document.createElement("option");
+        opcion.value = String(anio);
+        opcion.textContent = String(anio);
+        selectorAnio.appendChild(opcion);
+    }
+    selectorMes.value = String(new Date().getMonth() + 1);
+    selectorAnio.value = String(anioActual);
+
+    document.getElementById("btnActualizarEstadisticas")?.addEventListener("click", () => {
+        cargarEstadisticasDiarias();
+        cargarEstadisticasMensuales();
+    });
+    document.getElementById("btnConsultarMes")?.addEventListener("click", cargarEstadisticasMensuales);
+}
+
+function formatoNumeroEstadistica(valor, decimales = 1) {
+    if (valor === null || valor === undefined || !Number.isFinite(Number(valor))) return "--";
+    return Number(valor).toLocaleString("es-GT", { minimumFractionDigits: decimales, maximumFractionDigits: decimales });
+}
+
+async function solicitarEstadistica(url) {
+    const respuesta = await fetch(url, { method: "GET", headers: obtenerHeaders() });
+    if (manejarRespuesta401(respuesta)) throw new Error("La sesión expiró. Inicia sesión nuevamente.");
+    if (!respuesta.ok) {
+        const detalle = await respuesta.text();
+        throw new Error(`La API respondió ${respuesta.status}${detalle ? `: ${detalle}` : ""}`);
+    }
+    return await respuesta.json();
+}
+
+async function cargarEstadisticasDiarias() {
+    const mensaje = document.getElementById("mensajeEstadisticasDiarias");
+    if (!mensaje || !localStorage.getItem("token")) return;
+    mensaje.textContent = "Consultando lecturas...";
+    try {
+        const datos = await solicitarEstadistica(`${API_URL}/estadisticas/diarias`);
+        const hoy = datos.hoy || {};
+        const ayer = datos.ayer || {};
+        document.getElementById("promedioTempHoy").textContent = `${formatoNumeroEstadistica(hoy.temperaturaPromedio)} °C`;
+        document.getElementById("promedioTempAyer").textContent = `${formatoNumeroEstadistica(ayer.temperaturaPromedio)} °C`;
+        document.getElementById("cantidadLecturasHoy").textContent = `${hoy.cantidadLecturas || 0} lecturas`;
+        document.getElementById("cantidadLecturasAyer").textContent = `${ayer.cantidadLecturas || 0} lecturas`;
+        const diferencia = datos.diferenciaTemperatura;
+        const destino = document.getElementById("diferenciaTemperatura");
+        if (diferencia === null || diferencia === undefined || hoy.temperaturaPromedio == null || ayer.temperaturaPromedio == null) {
+            destino.textContent = "Sin datos";
+        } else {
+            destino.textContent = `${Number(diferencia) > 0 ? "+" : ""}${formatoNumeroEstadistica(diferencia)} °C`;
+        }
+        mensaje.textContent = hoy.cantidadLecturas ? `Fecha de hoy: ${datos.fechaHoy}.` : "Todavía no hay lecturas registradas para hoy.";
+    } catch (error) {
+        mensaje.textContent = `No se pudieron cargar las estadísticas diarias: ${error.message}`;
+    }
+}
+
+async function cargarEstadisticasMensuales() {
+    const mensaje = document.getElementById("mensajeEstadisticasMes");
+    const selectorMes = document.getElementById("mesEstadisticas");
+    const selectorAnio = document.getElementById("anioEstadisticas");
+    if (!mensaje || !selectorMes || !selectorAnio || !localStorage.getItem("token")) return;
+    mensaje.textContent = "Consultando estadísticas del mes...";
+    const mes = Number(selectorMes.value);
+    const anio = Number(selectorAnio.value);
+    try {
+        const datos = await solicitarEstadistica(`${API_URL}/estadisticas/mensuales?anio=${anio}&mes=${mes}`);
+        document.getElementById("tituloResumenMensual").textContent = `Resumen de ${MESES_ESTADISTICAS[mes - 1]} de ${anio}`;
+        document.getElementById("promedioTempMes").textContent = `${formatoNumeroEstadistica(datos.temperaturaPromedio)} °C`;
+        document.getElementById("rangoTempMes").textContent = `Mín. ${formatoNumeroEstadistica(datos.temperaturaMinima)} °C / Máx. ${formatoNumeroEstadistica(datos.temperaturaMaxima)} °C`;
+        document.getElementById("promedioHumedadMes").textContent = `${formatoNumeroEstadistica(datos.humedadAmbientalPromedio)} %`;
+        document.getElementById("promedioSueloMes").textContent = formatoNumeroEstadistica(datos.humedadSueloPromedio);
+        document.getElementById("cantidadLecturasMes").textContent = `${datos.cantidadLecturas || 0} lecturas registradas`;
+        dibujarGraficaTemperatura(datos.porDia || []);
+        mensaje.textContent = datos.cantidadLecturas ? `Se analizaron ${datos.cantidadLecturas} lecturas del mes seleccionado.` : "No hay lecturas registradas para el mes seleccionado.";
+    } catch (error) {
+        mensaje.textContent = `No se pudieron cargar las estadísticas mensuales: ${error.message}`;
+        document.getElementById("graficaTemperaturaMes").innerHTML = "";
+    }
+}
+
+function dibujarGraficaTemperatura(registros) {
+    const contenedor = document.getElementById("graficaTemperaturaMes");
+    if (!contenedor) return;
+    contenedor.innerHTML = "";
+    const datos = registros.filter(x => x.temperaturaPromedio !== null && x.temperaturaPromedio !== undefined);
+    if (!datos.length) {
+        contenedor.textContent = "No hay datos suficientes para mostrar la gráfica.";
+        return;
+    }
+    const maximo = Math.max(...datos.map(x => Number(x.temperaturaPromedio)));
+    const minimo = Math.min(...datos.map(x => Number(x.temperaturaPromedio)));
+    const rango = Math.max(maximo - minimo, 1);
+    datos.forEach(registro => {
+        const columna = document.createElement("div");
+        columna.className = "barra-temperatura-item";
+        const valor = Number(registro.temperaturaPromedio);
+        const barra = document.createElement("div");
+        barra.className = "barra-temperatura";
+        barra.style.height = `${Math.max(12, 30 + ((valor - minimo) / rango) * 65)}%`;
+        barra.title = `${registro.fecha}: ${formatoNumeroEstadistica(valor)} °C`;
+        const etiquetaValor = document.createElement("span");
+        etiquetaValor.className = "barra-valor";
+        etiquetaValor.textContent = formatoNumeroEstadistica(valor);
+        const etiquetaDia = document.createElement("span");
+        etiquetaDia.className = "barra-dia";
+        etiquetaDia.textContent = String(registro.dia);
+        columna.append(etiquetaValor, barra, etiquetaDia);
+        contenedor.appendChild(columna);
+    });
 }
