@@ -31,6 +31,24 @@ namespace InvernaderoIoT.API.Controllers
                 .OrderByDescending(e => e.FechaHoraInicio)
                 .ToList();
 
+            // SQL Server datetime2 no conserva DateTimeKind.
+            // Los valores históricos se almacenan como UTC.
+            foreach (var evento in eventos)
+            {
+                evento.FechaHoraInicio = DateTime.SpecifyKind(
+                    evento.FechaHoraInicio,
+                    DateTimeKind.Utc
+                );
+
+                if (evento.FechaHoraFin.HasValue)
+                {
+                    evento.FechaHoraFin = DateTime.SpecifyKind(
+                        evento.FechaHoraFin.Value,
+                        DateTimeKind.Utc
+                    );
+                }
+            }
+
             return Ok(eventos);
         }
 
@@ -54,6 +72,20 @@ namespace InvernaderoIoT.API.Controllers
                 });
             }
 
+            // SQL Server datetime2 no conserva DateTimeKind.
+            evento.FechaHoraInicio = DateTime.SpecifyKind(
+                evento.FechaHoraInicio,
+                DateTimeKind.Utc
+            );
+
+            if (evento.FechaHoraFin.HasValue)
+            {
+                evento.FechaHoraFin = DateTime.SpecifyKind(
+                    evento.FechaHoraFin.Value,
+                    DateTimeKind.Utc
+                );
+            }
+
             return Ok(evento);
         }
 
@@ -69,7 +101,7 @@ namespace InvernaderoIoT.API.Controllers
         {
             var evento = new EventoRiego
             {
-                FechaHoraInicio = DateTime.Now,
+                FechaHoraInicio = DateTime.UtcNow,
                 FechaHoraFin = null,
                 DuracionSegundos = null,
                 ActivadoAutomaticamente =
@@ -118,7 +150,7 @@ namespace InvernaderoIoT.API.Controllers
                 });
             }
 
-            evento.FechaHoraFin = DateTime.Now;
+            evento.FechaHoraFin = DateTime.UtcNow;
 
             evento.DuracionSegundos =
                 (int)(
@@ -149,7 +181,7 @@ namespace InvernaderoIoT.API.Controllers
         {
             var evento = new EventoRiego
             {
-                FechaHoraInicio = DateTime.Now,
+                FechaHoraInicio = DateTime.UtcNow,
                 FechaHoraFin = null,
                 DuracionSegundos = null,
                 ActivadoAutomaticamente = true
@@ -195,7 +227,7 @@ namespace InvernaderoIoT.API.Controllers
                 });
             }
 
-            evento.FechaHoraFin = DateTime.Now;
+            evento.FechaHoraFin = DateTime.UtcNow;
 
             evento.DuracionSegundos =
                 (int)(
