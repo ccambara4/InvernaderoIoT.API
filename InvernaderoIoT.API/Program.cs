@@ -33,8 +33,7 @@ namespace InvernaderoIoT.API
                     // Permite conexiones desde otros dispositivos
                     // de la red local.
                     webBuilder.UseUrls(
-                        "https://0.0.0.0:44376",
-                        "http://0.0.0.0:5000"
+                        "http://0.0.0.0:8080"
                     );
                 });
     }

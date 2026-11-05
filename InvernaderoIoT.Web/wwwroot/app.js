@@ -3,7 +3,7 @@
 ========================================================= */
 
 const API_BASE_URL =
-    "http://192.168.1.159:5000/api";
+    "https://invernaderoiot-api-defrhkc3hxbka7bj.mexicocentral-01.azurewebsites.net/api";
 
 const API_URL =
     `${API_BASE_URL}/Lecturas`;
