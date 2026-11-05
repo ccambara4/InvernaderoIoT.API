@@ -51,7 +51,7 @@ namespace InvernaderoIoT.API.Controllers
                 inicioModoManual.HasValue)
             {
                 TimeSpan tiempoTranscurrido =
-                    DateTime.Now -
+                    DateTime.UtcNow -
                     inicioModoManual.Value;
 
                 if (tiempoTranscurrido.TotalSeconds >=
@@ -85,7 +85,7 @@ namespace InvernaderoIoT.API.Controllers
                 inicioModoManual.HasValue)
             {
                 TimeSpan transcurrido =
-                    DateTime.Now -
+                    DateTime.UtcNow -
                     inicioModoManual.Value;
 
                 segundosRestantes =
@@ -157,7 +157,7 @@ namespace InvernaderoIoT.API.Controllers
             modoAutomatico = false;
 
             inicioModoManual =
-                DateTime.Now;
+                DateTime.UtcNow;
 
             ventiladorEncendido = false;
 
@@ -334,7 +334,7 @@ private void CrearEventoRiego()
 
             var evento = new EventoRiego
             {
-                FechaHoraInicio = DateTime.Now,
+                FechaHoraInicio = DateTime.UtcNow,
                 FechaHoraFin = null,
                 DuracionSegundos = null,
                 ActivadoAutomaticamente = false
@@ -367,7 +367,7 @@ private void CrearEventoRiego()
             if (evento != null &&
                 !evento.FechaHoraFin.HasValue)
             {
-                evento.FechaHoraFin = DateTime.Now;
+                evento.FechaHoraFin = DateTime.UtcNow;
 
                 evento.DuracionSegundos =
                     (int)(
