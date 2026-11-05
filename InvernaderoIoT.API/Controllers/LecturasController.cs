@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using InvernaderoIoT.API.Data;
 using InvernaderoIoT.API.Models;
+using InvernaderoIoT.API.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
@@ -28,9 +29,21 @@ namespace InvernaderoIoT.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LecturaAmbiental>>> GetLecturas()
         {
-            return await _context.LecturasAmbientales
+            var lecturas = await _context.LecturasAmbientales
                 .OrderByDescending(x => x.FechaHora)
                 .ToListAsync();
+
+            // SQL Server datetime2 no conserva DateTimeKind.
+            // Se etiquetan como UTC para que JSON incluya la zona horaria.
+            foreach (var lectura in lecturas)
+            {
+                lectura.FechaHora = DateTime.SpecifyKind(
+                    lectura.FechaHora,
+                    DateTimeKind.Utc
+                );
+            }
+
+            return lecturas;
         }
 
         // ==========================================
@@ -39,22 +52,35 @@ namespace InvernaderoIoT.API.Controllers
         [HttpGet("estadisticas/diarias")]
         public async Task<IActionResult> ObtenerEstadisticasDiarias()
         {
-            var hoy = DateTime.Today;
-            var ayer = hoy.AddDays(-1);
+            // Los días del reporte se delimitan según la hora de Guatemala,
+            // pero las fechas almacenadas y consultadas en SQL permanecen en UTC.
+            var hoyLocal = FechaHoraGuatemala
+                .ConvertirUtcALocal(DateTime.UtcNow)
+                .Date;
+
+            var inicioAyerUtc = FechaHoraGuatemala
+                .ConvertirLocalAUtc(hoyLocal.AddDays(-1));
+
+            var inicioHoyUtc = FechaHoraGuatemala
+                .ConvertirLocalAUtc(hoyLocal);
+
+            var inicioMananaUtc = FechaHoraGuatemala
+                .ConvertirLocalAUtc(hoyLocal.AddDays(1));
 
             var lecturas = await _context.LecturasAmbientales
-                .Where(x => x.FechaHora >= ayer &&
-                            x.FechaHora < hoy.AddDays(1))
+                .Where(x => x.FechaHora >= inicioAyerUtc &&
+                            x.FechaHora < inicioMananaUtc)
                 .ToListAsync();
 
             var datosAyer = Resumir(
                 lecturas.Where(x =>
-                    x.FechaHora >= ayer && x.FechaHora < hoy));
+                    x.FechaHora >= inicioAyerUtc &&
+                    x.FechaHora < inicioHoyUtc));
 
             var datosHoy = Resumir(
                 lecturas.Where(x =>
-                    x.FechaHora >= hoy &&
-                    x.FechaHora < hoy.AddDays(1)));
+                    x.FechaHora >= inicioHoyUtc &&
+                    x.FechaHora < inicioMananaUtc));
 
             decimal? diferencia =
                 datosHoy.TemperaturaPromedio.HasValue &&
@@ -65,16 +91,13 @@ namespace InvernaderoIoT.API.Controllers
 
             return Ok(new
             {
-                fechaHoy = hoy.ToString("yyyy-MM-dd"),
+                fechaHoy = hoyLocal.ToString("yyyy-MM-dd"),
                 hoy = datosHoy,
                 ayer = datosAyer,
                 diferenciaTemperatura = diferencia
             });
         }
 
-        // ==========================================
-        // ESTADISTICAS MENSUALES
-        // ==========================================
         [HttpGet("estadisticas/mensuales")]
         public async Task<IActionResult> ObtenerEstadisticasMensuales(
             [FromQuery] int anio,
@@ -89,19 +112,25 @@ namespace InvernaderoIoT.API.Controllers
                 });
             }
 
-            var inicio = new DateTime(anio, mes, 1);
-            var fin = inicio.AddMonths(1);
+            // El mes seleccionado representa el calendario de Guatemala.
+            // Se convierte su inicio y fin a UTC para consultar SQL.
+            var inicioLocal = new DateTime(anio, mes, 1);
+            var finLocal = inicioLocal.AddMonths(1);
+
+            var inicioUtc = FechaHoraGuatemala.ConvertirLocalAUtc(inicioLocal);
+            var finUtc = FechaHoraGuatemala.ConvertirLocalAUtc(finLocal);
 
             var lecturas = await _context.LecturasAmbientales
-                .Where(x => x.FechaHora >= inicio &&
-                            x.FechaHora < fin)
+                .Where(x => x.FechaHora >= inicioUtc &&
+                            x.FechaHora < finUtc)
                 .OrderBy(x => x.FechaHora)
                 .ToListAsync();
 
             var resumen = Resumir(lecturas);
 
+            // Agrupar por fecha local de Guatemala, no por día UTC.
             var porDia = lecturas
-                .GroupBy(x => x.FechaHora.Date)
+                .GroupBy(x => FechaHoraGuatemala.ConvertirUtcALocal(x.FechaHora).Date)
                 .OrderBy(g => g.Key)
                 .Select(g => new
                 {
@@ -142,9 +171,6 @@ namespace InvernaderoIoT.API.Controllers
             });
         }
 
-        // ==========================================
-        // OBTENER UNA LECTURA POR ID
-        // ==========================================
         [HttpGet("{id}")]
         public async Task<ActionResult<LecturaAmbiental>> GetLectura(int id)
         {
@@ -155,6 +181,11 @@ namespace InvernaderoIoT.API.Controllers
             {
                 return NotFound();
             }
+
+            lectura.FechaHora = DateTime.SpecifyKind(
+                lectura.FechaHora,
+                DateTimeKind.Utc
+            );
 
             return lectura;
         }
@@ -175,7 +206,7 @@ namespace InvernaderoIoT.API.Controllers
                 });
             }
 
-            lectura.FechaHora = DateTime.Now;
+            lectura.FechaHora = DateTime.UtcNow;
 
             _context.LecturasAmbientales.Add(lectura);
 
